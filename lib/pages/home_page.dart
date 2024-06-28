@@ -11,6 +11,8 @@ class MyHomepage extends StatefulWidget {
 
 class _MyHomepageState extends State<MyHomepage> {
 
+  final _controller = TextEditingController();
+
   List todoList = [
     ['Make Tutorial', false],
     ['Do Dinner', false]
@@ -22,12 +24,30 @@ class _MyHomepageState extends State<MyHomepage> {
     });
   }
 
+  void saveNewTask() {
+    setState(() {
+      todoList.add([ _controller.text, false ]);
+      _controller.clear();
+    });
+    Navigator.of(context).pop();
+  }
+
   void createNewTask() {
     showDialog(
       context: context, 
       builder: (context) {
-        return const DialogBox();
+        return DialogBox(
+          controller: _controller,
+          onSave: saveNewTask,
+          onCancel: () => Navigator.of(context).pop(),
+        );
       });
+  }
+
+  void deleteTask(int index) {
+    setState(() {
+      todoList.removeAt(index);
+    });
   }
 
   @override
@@ -46,13 +66,17 @@ class _MyHomepageState extends State<MyHomepage> {
         centerTitle: true,
       ),
       backgroundColor: Colors.teal.shade200,
-      body: ListView.builder(
-        itemCount: todoList.length,
-        itemBuilder: (context, index) => 
-        TodoTile(
-          taskName: todoList[index][0], 
-          taskCompleted: todoList[index][1], 
-          onChanged: (value) => checkBoxChange(value, index)),
+      body: Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: ListView.builder(
+          itemCount: todoList.length,
+          itemBuilder: (context, index) => 
+          TodoTile(
+            taskName: todoList[index][0], 
+            taskCompleted: todoList[index][1], 
+            onChanged: (value) => checkBoxChange(value, index),
+            deleteFunction: (context) => deleteTask(index)),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: createNewTask,
